@@ -54,6 +54,17 @@ func TestAPIController_GetTenantKeystores(t *testing.T) {
 		})
 
 		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response cmkapi.TenantKeystore
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+
+		// Acceptance criteria: Keystores endpoint returns allowManaged=true and allowBYOK=false under DefaultKeystore (hardcoded)
+		require.NotNil(t, response.Default, "DefaultKeystore should be present")
+		require.NotNil(t, response.Default.AllowManaged, "allowManaged should be present")
+		assert.True(t, *response.Default.AllowManaged, "Keystores endpoint must return allowManaged=true under DefaultKeystore")
+		require.NotNil(t, response.Default.AllowBYOK, "allowBYOK should be present")
+		assert.False(t, *response.Default.AllowBYOK, "Keystores endpoint must return allowBYOK=false under DefaultKeystore")
 	})
 }
 
